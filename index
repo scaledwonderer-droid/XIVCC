@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FF14 Character Card Generator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        "Hiragino Sans",
+        "Yu Gothic",
+        "Meiryo",
+        sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(120, 170, 255, 0.22), transparent 32%),
+        linear-gradient(135deg, #101522, #18131f 45%, #0d1018);
+      color: #f4f7fb;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 32px 20px 12px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(24px, 4vw, 40px);
+      letter-spacing: 0.08em;
+      font-weight: 800;
+    }
+
+    header p {
+      margin: 12px auto 0;
+      max-width: 720px;
+      color: #c8d1e2;
+      line-height: 1.8;
+      font-size: 14px;
+    }
+
+    main {
+      width: min(1180px, 94vw);
+      margin: 24px auto 40px;
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.28);
+      backdrop-filter: blur(12px);
+    }
+
+    .panel h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+    }
+
+    .form-group {
+      margin-bottom: 14px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #dce5f4;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 11px 12px;
+      background: rgba(0, 0, 0, 0.22);
+      color: #ffffff;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: rgba(130, 190, 255, 0.8);
+      box-shadow: 0 0 0 3px rgba(130, 190, 255, 0.16);
+    }
+
+    textarea {
+      min-height: 92px;
+      resize: vertical;
+      line-height: 1.7;
+    }
+
+    .note {
+      margin-top: 16px;
+      color: #b7c2d4;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .preview-wrap {
+      overflow: hidden;
+    }
+
+    .preview-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .preview-title h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+    }
+
+    .size-label {
+      color: #aeb9ca;
+      font-size: 12px;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 330px;
+      border-radius: 26px;
+      overflow: hidden;
+      background:
+        linear-gradient(120deg, rgba(81, 154, 255, 0.26), transparent 42%),
+        radial-gradient(circle at 88% 12%, rgba(255, 255, 255, 0.18), transparent 22%),
+        linear-gradient(135deg, #161b2a, #242032 48%, #101421);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 24px 70px rgba(0, 0, 0, 0.34);
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 20px;
+      pointer-events: none;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      right: -100px;
+      bottom: -150px;
+      width: 420px;
+      height: 420px;
+      border-radius: 999px;
+      background: rgba(125, 180, 255, 0.13);
+      filter: blur(2px);
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      padding: clamp(24px, 4vw, 48px);
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 28px;
+    }
+
+    .card-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .eyebrow {
+      color: #9fc8ff;
+      font-size: clamp(11px, 1.4vw, 14px);
+      letter-spacing: 0.22em;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .character-name {
+      margin-top: 14px;
+      font-size: clamp(30px, 5vw, 62px);
+      line-height: 1.08;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      word-break: break-word;
+      text-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    .world-line {
+      margin-top: 14px;
+      color: #dce8f9;
+      font-size: clamp(14px, 2vw, 20px);
+      letter-spacing: 0.06em;
+    }
+
+    .comment-box {
+      margin-top: 28px;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      color: #f3f7ff;
+      line-height: 1.8;
+      font-size: clamp(13px, 1.6vw, 16px);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .card-right {
+      align-self: center;
+      display: grid;
+      gap: 12px;
+    }
+
+    .info-box {
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .info-label {
+      color: #9fc8ff;
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .info-value {
+      margin-top: 6px;
+      color: #ffffff;
+      font-size: clamp(16px, 2.1vw, 24px);
+      font-weight: 800;
+      word-break: break-word;
+    }
+
+    .copyright {
+      position: absolute;
+      z-index: 2;
+      right: 28px;
+      bottom: 20px;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: clamp(9px, 1.2vw, 12px);
+      letter-spacing: 0.04em;
+    }
+
+    footer {
+      width: min(1180px, 94vw);
+      margin: 0 auto 32px;
+      color: #aeb9ca;
+      font-size: 12px;
+      line-height: 1.8;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+
+      .card-inner {
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .card-right {
+        align-self: stretch;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .comment-box {
+        margin-top: 20px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .panel {
+        padding: 16px;
+        border-radius: 16px;
+      }
+
+      .card {
+        min-height: 520px;
+      }
+
+      .card-inner {
+        padding: 28px;
+      }
+
+      .card-right {
+        grid-template-columns: 1fr;
+      }
+
+      .copyright {
+        left: 28px;
+        right: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>FF14 Character Card Generator</h1>
+    <p>
+      SNSやDiscordで使える、シンプルなFF14キャラクターカードを作るための非公式ファンツールです。
+      入力内容はこの画面内のプレビューに反映されます。
+    </p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>入力欄</h2>
+
+      <div class="form-group">
+        <label for="nameInput">キャラクター名</label>
+        <input id="nameInput" type="text" value="Luca Kusakabe" maxlength="40" />
+      </div>
+
+      <div class="form-group">
+        <label for="dcInput">DC</label>
+        <input id="dcInput" type="text" value="Meteor" maxlength="24" />
+      </div>
+
+      <div class="form-group">
+        <label for="worldInput">ワールド</label>
+        <input id="worldInput" type="text" value="Shinryu" maxlength="24" />
+      </div>
+
+      <div class="form-group">
+        <label for="jobInput">メインジョブ</label>
+        <input id="jobInput" type="text" value="Ninja" maxlength="30" />
+      </div>
+
+      <div class="form-group">
+        <label for="styleInput">プレイスタイル</label>
+        <input id="styleInput" type="text" value="Housing / PvP / Casual" maxlength="50" />
+      </div>
+
+      <div class="form-group">
+        <label for="commentInput">ひとこと</label>
+        <textarea id="commentInput" maxlength="120">深夜から朝方にかけて、のんびり遊んでいます。交流・SS・ハウジング巡りが好きです。</textarea>
+      </div>
+
+      <p class="note">
+        ※ この段階では画像アップロードやPNG保存はまだありません。<br>
+        ※ 画像や入力内容をサーバーに保存する機能は入れていません。
+      </p>
+    </section>
+
+    <section class="panel preview-wrap">
+      <div class="preview-title">
+        <h2>カードプレビュー</h2>
+        <span class="size-label">16:9 Preview</span>
+      </div>
+
+      <article class="card" aria-label="キャラクターカードプレビュー">
+        <div class="card-inner">
+          <div class="card-left">
+            <div>
+              <div class="eyebrow">Final Fantasy XIV Character Card</div>
+              <div id="namePreview" class="character-name">Luca Kusakabe</div>
+              <div class="world-line">
+                <span id="dcPreview">Meteor</span> / <span id="worldPreview">Shinryu</span>
+              </div>
+            </div>
+
+            <div id="commentPreview" class="comment-box">
+              深夜から朝方にかけて、のんびり遊んでいます。交流・SS・ハウジング巡りが好きです。
+            </div>
+          </div>
+
+          <div class="card-right">
+            <div class="info-box">
+              <div class="info-label">Main Job</div>
+              <div id="jobPreview" class="info-value">Ninja</div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-label">Play Style</div>
+              <div id="stylePreview" class="info-value">Housing / PvP / Casual</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="copyright">© SQUARE ENIX</div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    本ツールはFINAL FANTASY XIVの非公式ファンツールです。<br>
+    株式会社スクウェア・エニックスおよびFINAL FANTASY XIV公式とは関係ありません。<br>
+    © SQUARE ENIX
+  </footer>
+
+  <script>
+    const fields = [
+      {
+        input: "nameInput",
+        preview: "namePreview",
+        fallback: "Character Name"
+      },
+      {
+        input: "dcInput",
+        preview: "dcPreview",
+        fallback: "DC"
+      },
+      {
+        input: "worldInput",
+        preview: "worldPreview",
+        fallback: "World"
+      },
+      {
+        input: "jobInput",
+        preview: "jobPreview",
+        fallback: "Main Job"
+      },
+      {
+        input: "styleInput",
+        preview: "stylePreview",
+        fallback: "Play Style"
+      },
+      {
+        input: "commentInput",
+        preview: "commentPreview",
+        fallback: "ここにひとことが入ります。"
+      }
+    ];
+
+    function updatePreview() {
+      fields.forEach((field) => {
+        const inputElement = document.getElementById(field.input);
+        const previewElement = document.getElementById(field.preview);
+
+        const value = inputElement.value.trim();
+        previewElement.textContent = value || field.fallback;
+      });
+    }
+
+    fields.forEach((field) => {
+      const inputElement = document.getElementById(field.input);
+      inputElement.addEventListener("input", updatePreview);
+    });
+
+    updatePreview();
+  </script>
+</body>
+</html>
