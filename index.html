@@ -170,6 +170,7 @@
       color: #b9d7ff;
       font-size: 12px;
       font-weight: 800;
+      white-space: nowrap;
     }
 
     .mini-help {
@@ -177,6 +178,17 @@
       color: #aeb9ca;
       font-size: 12px;
       line-height: 1.6;
+    }
+
+    .drag-help {
+      margin: 10px 0 0;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(90, 150, 230, 0.16);
+      border: 1px solid rgba(150, 205, 255, 0.18);
+      color: #dceaff;
+      font-size: 12px;
+      line-height: 1.7;
     }
 
     .note {
@@ -224,6 +236,16 @@
       box-shadow:
         inset 0 0 0 1px rgba(255, 255, 255, 0.08),
         0 24px 70px rgba(0, 0, 0, 0.34);
+      user-select: none;
+      touch-action: none;
+    }
+
+    .card.has-bg {
+      cursor: grab;
+    }
+
+    .card.has-bg.is-dragging {
+      cursor: grabbing;
     }
 
     .bg-image {
@@ -242,7 +264,14 @@
       transition:
         opacity 0.2s ease,
         transform 0.2s ease,
-        object-position 0.2s ease;
+        object-position 0.08s linear;
+    }
+
+    .card.is-dragging .bg-image {
+      transition:
+        opacity 0.2s ease,
+        transform 0.2s ease,
+        object-position 0s linear;
     }
 
     .bg-image.has-image {
@@ -259,6 +288,7 @@
         radial-gradient(circle at 86% 18%, rgba(150, 190, 255, 0.18), transparent 30%);
       opacity: 1;
       transition: opacity 0.2s ease;
+      pointer-events: none;
     }
 
     .card.has-bg .card-overlay {
@@ -303,6 +333,7 @@
       display: grid;
       grid-template-columns: 1.1fr 0.9fr;
       gap: 28px;
+      pointer-events: none;
     }
 
     .card-left {
@@ -397,6 +428,7 @@
       font-size: clamp(9px, 1.2vw, 12px);
       letter-spacing: 0.04em;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.85);
+      pointer-events: none;
     }
 
     footer {
@@ -490,7 +522,7 @@
           <button class="position-button" type="button" data-x="100" data-y="100">↘</button>
         </div>
         <p class="mini-help">
-          16:9のSSはカードと比率が近いため、背景ズームを少し上げると位置調整が分かりやすくなります。
+          グリッドでざっくり寄せたあと、カード上をドラッグすると背景位置を微調整できます。
         </p>
       </div>
 
@@ -500,6 +532,17 @@
           <span id="zoomValue" class="range-value">110%</span>
         </div>
         <input id="zoomInput" type="range" min="100" max="160" step="1" value="110" />
+      </div>
+
+      <div class="form-group">
+        <div class="range-head">
+          <label>現在の背景位置</label>
+          <span id="positionValue" class="range-value">50% / 50%</span>
+        </div>
+        <p class="drag-help">
+          SSを選択したあと、カードプレビュー上でマウスドラッグすると背景を動かせます。<br>
+          16:9のSSは、背景ズームを110%以上にすると動きが分かりやすくなります。
+        </p>
       </div>
 
       <div class="form-group">
@@ -629,6 +672,20 @@
     const positionButtons = document.querySelectorAll(".position-button");
     const zoomInput = document.getElementById("zoomInput");
     const zoomValue = document.getElementById("zoomValue");
+    const positionValue = document.getElementById("positionValue");
+
+    let bgPositionX = 50;
+    let bgPositionY = 50;
+
+    let isDragging = false;
+    let dragStartClientX = 0;
+    let dragStartClientY = 0;
+    let dragStartPositionX = 50;
+    let dragStartPositionY = 50;
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
 
     function updatePreview() {
       fields.forEach((field) => {
@@ -640,11 +697,40 @@
       });
     }
 
-    function setBackgroundPosition(x, y) {
-      const position = `${x}% ${y}%`;
+    function updateActiveGridButton() {
+      let matched = false;
+
+      positionButtons.forEach((button) => {
+        const buttonX = Number(button.dataset.x);
+        const buttonY = Number(button.dataset.y);
+        const isMatch = buttonX === bgPositionX && buttonY === bgPositionY;
+
+        button.classList.toggle("is-active", isMatch);
+
+        if (isMatch) {
+          matched = true;
+        }
+      });
+
+      if (!matched) {
+        positionButtons.forEach((button) => {
+          button.classList.remove("is-active");
+        });
+      }
+    }
+
+    function setBackgroundPosition(x, y, shouldUpdateGrid = true) {
+      bgPositionX = Math.round(clamp(Number(x), 0, 100));
+      bgPositionY = Math.round(clamp(Number(y), 0, 100));
+
+      const position = `${bgPositionX}% ${bgPositionY}%`;
 
       bgImage.style.objectPosition = position;
-      bgImage.style.transformOrigin = position;
+      positionValue.textContent = `${bgPositionX}% / ${bgPositionY}%`;
+
+      if (shouldUpdateGrid) {
+        updateActiveGridButton();
+      }
     }
 
     function updateZoom() {
@@ -653,6 +739,14 @@
 
       bgImage.style.setProperty("--image-zoom", scale);
       zoomValue.textContent = `${zoom}%`;
+    }
+
+    function getDragSensitivity() {
+      const zoom = Number(zoomInput.value);
+      const scale = zoom / 100;
+      const extraScale = Math.max(scale - 1, 0.08);
+
+      return extraScale;
     }
 
     fields.forEach((field) => {
@@ -680,6 +774,7 @@
         bgImage.classList.add("has-image");
         cardPreview.classList.add("has-bg");
         updateZoom();
+        setBackgroundPosition(bgPositionX, bgPositionY);
       };
 
       reader.readAsDataURL(file);
@@ -690,6 +785,8 @@
       bgImage.removeAttribute("src");
       bgImage.classList.remove("has-image");
       cardPreview.classList.remove("has-bg");
+      cardPreview.classList.remove("is-dragging");
+      isDragging = false;
     });
 
     positionButtons.forEach((button) => {
@@ -697,16 +794,74 @@
         const x = button.dataset.x;
         const y = button.dataset.y;
 
-        positionButtons.forEach((item) => {
-          item.classList.remove("is-active");
-        });
-
-        button.classList.add("is-active");
         setBackgroundPosition(x, y);
       });
     });
 
-    zoomInput.addEventListener("input", updateZoom);
+    zoomInput.addEventListener("input", () => {
+      updateZoom();
+      setBackgroundPosition(bgPositionX, bgPositionY, false);
+    });
+
+    cardPreview.addEventListener("pointerdown", (event) => {
+      if (!cardPreview.classList.contains("has-bg")) {
+        return;
+      }
+
+      if (event.button !== undefined && event.button !== 0) {
+        return;
+      }
+
+      isDragging = true;
+      dragStartClientX = event.clientX;
+      dragStartClientY = event.clientY;
+      dragStartPositionX = bgPositionX;
+      dragStartPositionY = bgPositionY;
+
+      cardPreview.classList.add("is-dragging");
+      cardPreview.setPointerCapture(event.pointerId);
+    });
+
+    cardPreview.addEventListener("pointermove", (event) => {
+      if (!isDragging) {
+        return;
+      }
+
+      const rect = cardPreview.getBoundingClientRect();
+      const sensitivity = getDragSensitivity();
+
+      const deltaX = event.clientX - dragStartClientX;
+      const deltaY = event.clientY - dragStartClientY;
+
+      const moveX = (deltaX / rect.width) * 100 / sensitivity;
+      const moveY = (deltaY / rect.height) * 100 / sensitivity;
+
+      const nextX = dragStartPositionX - moveX;
+      const nextY = dragStartPositionY - moveY;
+
+      setBackgroundPosition(nextX, nextY);
+    });
+
+    function endDrag(event) {
+      if (!isDragging) {
+        return;
+      }
+
+      isDragging = false;
+      cardPreview.classList.remove("is-dragging");
+
+      if (event && event.pointerId !== undefined) {
+        try {
+          cardPreview.releasePointerCapture(event.pointerId);
+        } catch (error) {
+          // すでに解除されている場合は何もしません。
+        }
+      }
+    }
+
+    cardPreview.addEventListener("pointerup", endDrag);
+    cardPreview.addEventListener("pointercancel", endDrag);
+    cardPreview.addEventListener("pointerleave", endDrag);
 
     updatePreview();
     updateZoom();
