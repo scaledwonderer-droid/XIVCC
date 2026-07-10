@@ -257,6 +257,12 @@
         linear-gradient(90deg, rgba(6, 10, 18, 0.84), rgba(6, 10, 18, 0.52) 48%, rgba(6, 10, 18, 0.34)),
         linear-gradient(0deg, rgba(6, 10, 18, 0.58), rgba(6, 10, 18, 0.18)),
         radial-gradient(circle at 86% 18%, rgba(150, 190, 255, 0.18), transparent 30%);
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .card.has-bg .card-overlay {
+      opacity: 0;
     }
 
     .card::before {
@@ -281,6 +287,12 @@
       background: rgba(125, 180, 255, 0.12);
       filter: blur(2px);
       pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.2s ease;
+    }
+
+    .card.has-bg::after {
+      opacity: 0;
     }
 
     .card-inner {
@@ -333,7 +345,7 @@
       margin-top: 28px;
       padding: 18px 20px;
       border-radius: 18px;
-      background: rgba(0, 0, 0, 0.42);
+      background: rgba(0, 0, 0, 0.48);
       border: 1px solid rgba(255, 255, 255, 0.18);
       color: #f3f7ff;
       line-height: 1.8;
@@ -353,7 +365,7 @@
     .info-box {
       padding: 16px 18px;
       border-radius: 18px;
-      background: rgba(0, 0, 0, 0.36);
+      background: rgba(0, 0, 0, 0.42);
       border: 1px solid rgba(255, 255, 255, 0.2);
       backdrop-filter: blur(6px);
     }
@@ -478,7 +490,7 @@
           <button class="position-button" type="button" data-x="100" data-y="100">↘</button>
         </div>
         <p class="mini-help">
-          16:9のSSはカードと比率が近いため、下のズームを少し上げると位置調整が分かりやすくなります。
+          16:9のSSはカードと比率が近いため、背景ズームを少し上げると位置調整が分かりやすくなります。
         </p>
       </div>
 
@@ -533,7 +545,7 @@
         <span class="size-label">16:9 Preview</span>
       </div>
 
-      <article class="card" aria-label="キャラクターカードプレビュー">
+      <article id="cardPreview" class="card" aria-label="キャラクターカードプレビュー">
         <img id="bgImage" class="bg-image" alt="" />
         <div class="card-overlay"></div>
 
@@ -613,6 +625,7 @@
     const imageInput = document.getElementById("imageInput");
     const bgImage = document.getElementById("bgImage");
     const clearImageButton = document.getElementById("clearImageButton");
+    const cardPreview = document.getElementById("cardPreview");
     const positionButtons = document.querySelectorAll(".position-button");
     const zoomInput = document.getElementById("zoomInput");
     const zoomValue = document.getElementById("zoomValue");
@@ -665,6 +678,7 @@
       reader.onload = () => {
         bgImage.src = reader.result;
         bgImage.classList.add("has-image");
+        cardPreview.classList.add("has-bg");
         updateZoom();
       };
 
@@ -675,6 +689,7 @@
       imageInput.value = "";
       bgImage.removeAttribute("src");
       bgImage.classList.remove("has-image");
+      cardPreview.classList.remove("has-bg");
     });
 
     positionButtons.forEach((button) => {
