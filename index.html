@@ -121,6 +121,7 @@
       display: flex;
       gap: 10px;
       margin-top: 8px;
+      flex-wrap: wrap;
     }
 
     button {
@@ -136,6 +137,19 @@
 
     button:hover {
       background: rgba(255, 255, 255, 0.16);
+    }
+
+    .save-button {
+      width: 100%;
+      margin-top: 4px;
+      padding: 13px 14px;
+      background: linear-gradient(135deg, rgba(92, 154, 255, 0.72), rgba(124, 208, 255, 0.48));
+      border-color: rgba(180, 220, 255, 0.48);
+      box-shadow: 0 10px 26px rgba(70, 140, 255, 0.2);
+    }
+
+    .save-button:hover {
+      background: linear-gradient(135deg, rgba(108, 170, 255, 0.84), rgba(148, 222, 255, 0.58));
     }
 
     .position-grid {
@@ -577,10 +591,12 @@
         <textarea id="commentInput" maxlength="120">深夜から朝方にかけて、のんびり遊んでいます。交流・SS・ハウジング巡りが好きです。</textarea>
       </div>
 
+      <button id="saveButton" class="save-button" type="button">PNGとして保存</button>
+
       <p class="note">
         ※ 選択した画像はブラウザ内だけで表示されます。<br>
         ※ このツール側で画像や入力内容を保存する機能は入れていません。<br>
-        ※ まだPNG保存機能はありません。
+        ※ 保存画像は 1200 × 675px のPNGとして出力されます。
       </p>
     </section>
 
@@ -675,6 +691,7 @@
     const zoomInput = document.getElementById("zoomInput");
     const zoomValue = document.getElementById("zoomValue");
     const positionValue = document.getElementById("positionValue");
+    const saveButton = document.getElementById("saveButton");
 
     let bgPositionX = 50;
     let bgPositionY = 50;
@@ -687,6 +704,8 @@
     let dragStartClientY = 0;
     let dragStartPositionX = 50;
     let dragStartPositionY = 50;
+
+    const FONT_STACK = '"Segoe UI", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif';
 
     function clamp(value, min, max) {
       return Math.min(Math.max(value, min), max);
@@ -724,24 +743,22 @@
       }
     }
 
-    function getImageLayout() {
-      const rect = cardPreview.getBoundingClientRect();
-
-      if (!imageNaturalWidth || !imageNaturalHeight || rect.width <= 0 || rect.height <= 0) {
+    function getImageLayout(targetWidth, targetHeight) {
+      if (!imageNaturalWidth || !imageNaturalHeight || targetWidth <= 0 || targetHeight <= 0) {
         return null;
       }
 
       const zoom = Number(zoomInput.value) / 100;
       const coverScale = Math.max(
-        rect.width / imageNaturalWidth,
-        rect.height / imageNaturalHeight
+        targetWidth / imageNaturalWidth,
+        targetHeight / imageNaturalHeight
       );
 
       const displayWidth = imageNaturalWidth * coverScale * zoom;
       const displayHeight = imageNaturalHeight * coverScale * zoom;
 
-      const overflowX = Math.max(displayWidth - rect.width, 0);
-      const overflowY = Math.max(displayHeight - rect.height, 0);
+      const overflowX = Math.max(displayWidth - targetWidth, 0);
+      const overflowY = Math.max(displayHeight - targetHeight, 0);
 
       const left = -overflowX * (bgPositionX / 100);
       const top = -overflowY * (bgPositionY / 100);
@@ -756,11 +773,16 @@
       };
     }
 
+    function getPreviewImageLayout() {
+      const rect = cardPreview.getBoundingClientRect();
+      return getImageLayout(rect.width, rect.height);
+    }
+
     function applyBackgroundLayout() {
       zoomValue.textContent = `${Number(zoomInput.value)}%`;
       positionValue.textContent = `${bgPositionX}% / ${bgPositionY}%`;
 
-      const layout = getImageLayout();
+      const layout = getPreviewImageLayout();
 
       if (!layout) {
         return;
@@ -882,7 +904,7 @@
 
       event.preventDefault();
 
-      const layout = getImageLayout();
+      const layout = getPreviewImageLayout();
 
       if (!layout) {
         return;
@@ -926,6 +948,275 @@
     window.addEventListener("resize", () => {
       applyBackgroundLayout();
     });
+
+    function roundRect(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + width - r, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+      ctx.lineTo(x + width, y + height - r);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+      ctx.lineTo(x + r, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function drawRoundedFill(ctx, x, y, width, height, radius, fillStyle) {
+      ctx.save();
+      roundRect(ctx, x, y, width, height, radius);
+      ctx.fillStyle = fillStyle;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawRoundedStroke(ctx, x, y, width, height, radius, strokeStyle, lineWidth) {
+      ctx.save();
+      roundRect(ctx, x, y, width, height, radius);
+      ctx.strokeStyle = strokeStyle;
+      ctx.lineWidth = lineWidth;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
+      const rawLines = String(text || "").split("\n");
+      const lines = [];
+
+      rawLines.forEach((rawLine) => {
+        let currentLine = "";
+
+        Array.from(rawLine).forEach((char) => {
+          const testLine = currentLine + char;
+
+          if (ctx.measureText(testLine).width > maxWidth && currentLine) {
+            lines.push(currentLine);
+            currentLine = char;
+          } else {
+            currentLine = testLine;
+          }
+        });
+
+        lines.push(currentLine);
+      });
+
+      const outputLines = lines.slice(0, maxLines);
+
+      if (lines.length > maxLines && outputLines.length > 0) {
+        let lastLine = outputLines[outputLines.length - 1];
+
+        while (lastLine.length > 0 && ctx.measureText(lastLine + "…").width > maxWidth) {
+          lastLine = lastLine.slice(0, -1);
+        }
+
+        outputLines[outputLines.length - 1] = lastLine + "…";
+      }
+
+      outputLines.forEach((line, index) => {
+        ctx.fillText(line, x, y + lineHeight * index);
+      });
+
+      return outputLines.length;
+    }
+
+    function drawDefaultCanvasBackground(ctx, width, height) {
+      const baseGradient = ctx.createLinearGradient(0, 0, width, height);
+      baseGradient.addColorStop(0, "#161b2a");
+      baseGradient.addColorStop(0.48, "#242032");
+      baseGradient.addColorStop(1, "#101421");
+      ctx.fillStyle = baseGradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const blueGradient = ctx.createLinearGradient(0, 0, width * 0.7, height * 0.7);
+      blueGradient.addColorStop(0, "rgba(81, 154, 255, 0.30)");
+      blueGradient.addColorStop(0.58, "rgba(81, 154, 255, 0.08)");
+      blueGradient.addColorStop(1, "rgba(81, 154, 255, 0)");
+      ctx.fillStyle = blueGradient;
+      ctx.fillRect(0, 0, width, height);
+
+      const lightOrb = ctx.createRadialGradient(width * 0.88, height * 0.12, 0, width * 0.88, height * 0.12, width * 0.24);
+      lightOrb.addColorStop(0, "rgba(255, 255, 255, 0.18)");
+      lightOrb.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = lightOrb;
+      ctx.fillRect(0, 0, width, height);
+
+      const smoke = ctx.createLinearGradient(0, 0, width, 0);
+      smoke.addColorStop(0, "rgba(6, 10, 18, 0.84)");
+      smoke.addColorStop(0.48, "rgba(6, 10, 18, 0.52)");
+      smoke.addColorStop(1, "rgba(6, 10, 18, 0.34)");
+      ctx.fillStyle = smoke;
+      ctx.fillRect(0, 0, width, height);
+
+      const bottomSmoke = ctx.createLinearGradient(0, height, 0, 0);
+      bottomSmoke.addColorStop(0, "rgba(6, 10, 18, 0.58)");
+      bottomSmoke.addColorStop(1, "rgba(6, 10, 18, 0.18)");
+      ctx.fillStyle = bottomSmoke;
+      ctx.fillRect(0, 0, width, height);
+
+      const accentOrb = ctx.createRadialGradient(width * 0.86, height * 0.18, 0, width * 0.86, height * 0.18, width * 0.32);
+      accentOrb.addColorStop(0, "rgba(150, 190, 255, 0.18)");
+      accentOrb.addColorStop(1, "rgba(150, 190, 255, 0)");
+      ctx.fillStyle = accentOrb;
+      ctx.fillRect(0, 0, width, height);
+
+      const lowerOrb = ctx.createRadialGradient(width * 1.03, height * 1.08, 0, width * 1.03, height * 1.08, width * 0.36);
+      lowerOrb.addColorStop(0, "rgba(125, 180, 255, 0.12)");
+      lowerOrb.addColorStop(1, "rgba(125, 180, 255, 0)");
+      ctx.fillStyle = lowerOrb;
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    function drawCanvasBackground(ctx, width, height) {
+      if (cardPreview.classList.contains("has-bg") && bgImage.complete && imageNaturalWidth && imageNaturalHeight) {
+        const layout = getImageLayout(width, height);
+
+        if (layout) {
+          ctx.drawImage(
+            bgImage,
+            layout.left,
+            layout.top,
+            layout.displayWidth,
+            layout.displayHeight
+          );
+
+          return;
+        }
+      }
+
+      drawDefaultCanvasBackground(ctx, width, height);
+    }
+
+    function getInputValue(inputId, fallback) {
+      const element = document.getElementById(inputId);
+      const value = element.value.trim();
+
+      return value || fallback;
+    }
+
+    function drawCardToCanvas() {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
+      const width = 1200;
+      const height = 675;
+
+      canvas.width = width;
+      canvas.height = height;
+
+      drawCanvasBackground(ctx, width, height);
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.34)";
+      ctx.shadowBlur = 34;
+      ctx.shadowOffsetY = 18;
+      drawRoundedStroke(ctx, 1, 1, width - 2, height - 2, 34, "rgba(255, 255, 255, 0.24)", 2);
+      ctx.restore();
+
+      drawRoundedStroke(ctx, 30, 30, width - 60, height - 60, 26, "rgba(255, 255, 255, 0.30)", 2);
+
+      const name = getInputValue("nameInput", "Character Name");
+      const dc = getInputValue("dcInput", "DC");
+      const world = getInputValue("worldInput", "World");
+      const job = getInputValue("jobInput", "Main Job");
+      const style = getInputValue("styleInput", "Play Style");
+      const comment = getInputValue("commentInput", "ここにひとことが入ります。");
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 4;
+
+      ctx.fillStyle = "#b9d7ff";
+      ctx.font = `800 18px ${FONT_STACK}`;
+      ctx.letterSpacing = "3px";
+      ctx.fillText("FINAL FANTASY XIV CHARACTER CARD", 72, 96);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `900 74px ${FONT_STACK}`;
+      ctx.letterSpacing = "2px";
+      drawWrappedText(ctx, name, 72, 172, 620, 80, 2);
+
+      ctx.fillStyle = "#e2ecfb";
+      ctx.font = `700 26px ${FONT_STACK}`;
+      ctx.letterSpacing = "1px";
+      drawWrappedText(ctx, `${dc} / ${world}`, 74, 338, 620, 34, 1);
+
+      ctx.restore();
+
+      drawRoundedFill(ctx, 72, 430, 650, 150, 22, "rgba(0, 0, 0, 0.50)");
+      drawRoundedStroke(ctx, 72, 430, 650, 150, 22, "rgba(255, 255, 255, 0.20)", 1.5);
+
+      ctx.save();
+      ctx.fillStyle = "#f3f7ff";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 2;
+      ctx.font = `500 22px ${FONT_STACK}`;
+      drawWrappedText(ctx, comment, 102, 470, 590, 36, 3);
+      ctx.restore();
+
+      drawRoundedFill(ctx, 790, 250, 330, 96, 22, "rgba(0, 0, 0, 0.44)");
+      drawRoundedStroke(ctx, 790, 250, 330, 96, 22, "rgba(255, 255, 255, 0.22)", 1.5);
+
+      drawRoundedFill(ctx, 790, 370, 330, 116, 22, "rgba(0, 0, 0, 0.44)");
+      drawRoundedStroke(ctx, 790, 370, 330, 116, 22, "rgba(255, 255, 255, 0.22)", 1.5);
+
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.78)";
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 2;
+
+      ctx.fillStyle = "#b9d7ff";
+      ctx.font = `800 15px ${FONT_STACK}`;
+      ctx.fillText("MAIN JOB", 814, 286);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 31px ${FONT_STACK}`;
+      drawWrappedText(ctx, job, 814, 324, 282, 36, 1);
+
+      ctx.fillStyle = "#b9d7ff";
+      ctx.font = `800 15px ${FONT_STACK}`;
+      ctx.fillText("PLAY STYLE", 814, 408);
+
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 28px ${FONT_STACK}`;
+      drawWrappedText(ctx, style, 814, 446, 282, 34, 2);
+
+      ctx.restore();
+
+      ctx.save();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.80)";
+      ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
+      ctx.font = `500 15px ${FONT_STACK}`;
+      ctx.textAlign = "right";
+      ctx.fillText("© SQUARE ENIX", width - 42, height - 34);
+      ctx.restore();
+
+      return canvas;
+    }
+
+    async function saveCardAsPng() {
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      const canvas = drawCardToCanvas();
+      const name = getInputValue("nameInput", "ff14-character-card")
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .slice(0, 40);
+
+      const link = document.createElement("a");
+      link.download = `${name || "ff14-character-card"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }
+
+    saveButton.addEventListener("click", saveCardAsPng);
 
     updatePreview();
     updateZoom();
