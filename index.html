@@ -83,8 +83,7 @@
       font-weight: 700;
     }
 
-    input,
-    textarea {
+    input {
       width: 100%;
       border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 12px;
@@ -95,16 +94,9 @@
       outline: none;
     }
 
-    input:focus,
-    textarea:focus {
+    input:focus {
       border-color: rgba(130, 190, 255, 0.8);
       box-shadow: 0 0 0 3px rgba(130, 190, 255, 0.16);
-    }
-
-    textarea {
-      min-height: 92px;
-      resize: vertical;
-      line-height: 1.7;
     }
 
     input[type="file"] {
@@ -205,13 +197,13 @@
       line-height: 1.7;
     }
 
-    .style-checks {
+    .check-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 8px;
     }
 
-    .style-check {
+    .check-item {
       display: flex;
       align-items: center;
       gap: 8px;
@@ -224,7 +216,7 @@
       cursor: pointer;
     }
 
-    .style-check input {
+    .check-item input {
       width: auto;
       margin: 0;
       accent-color: #8cc8ff;
@@ -372,15 +364,15 @@
       height: 100%;
       padding: clamp(24px, 4vw, 48px);
       display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 28px;
+      grid-template-columns: 1.05fr 0.9fr;
+      gap: 24px;
       pointer-events: none;
     }
 
     .card-left {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      justify-content: center;
       min-width: 0;
     }
 
@@ -395,7 +387,7 @@
 
     .character-name {
       margin-top: 14px;
-      font-size: clamp(30px, 5vw, 62px);
+      font-size: clamp(30px, 4.6vw, 58px);
       line-height: 1.08;
       font-weight: 900;
       letter-spacing: 0.04em;
@@ -406,36 +398,22 @@
     }
 
     .world-line {
-      margin-top: 14px;
+      margin-top: 18px;
       color: #e2ecfb;
       font-size: clamp(14px, 2vw, 20px);
       letter-spacing: 0.06em;
+      font-weight: 700;
       text-shadow: 0 3px 12px rgba(0, 0, 0, 0.72);
-    }
-
-    .comment-box {
-      margin-top: 28px;
-      padding: 18px 20px;
-      border-radius: 18px;
-      background: rgba(0, 0, 0, 0.48);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      color: #f3f7ff;
-      line-height: 1.8;
-      font-size: clamp(13px, 1.6vw, 16px);
-      white-space: pre-wrap;
-      word-break: break-word;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(5px);
     }
 
     .card-right {
       align-self: center;
       display: grid;
-      gap: 12px;
+      gap: 10px;
     }
 
     .info-box {
-      padding: 16px 18px;
+      padding: 14px 16px;
       border-radius: 18px;
       background: rgba(0, 0, 0, 0.42);
       border: 1px solid rgba(255, 255, 255, 0.2);
@@ -460,29 +438,29 @@
       text-shadow: 0 3px 12px rgba(0, 0, 0, 0.82);
     }
 
-    .style-icons {
+    .icon-list {
       margin-top: 10px;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      min-height: 42px;
+      gap: 7px;
+      min-height: 38px;
       align-items: center;
     }
 
-    .style-icon {
-      width: 38px;
-      height: 38px;
+    .icon-chip {
+      width: 34px;
+      height: 34px;
       display: grid;
       place-items: center;
-      border-radius: 12px;
+      border-radius: 11px;
       border: 1px solid rgba(185, 215, 255, 0.42);
       background: rgba(120, 170, 255, 0.14);
       box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
     }
 
-    .style-icon svg {
-      width: 24px;
-      height: 24px;
+    .icon-chip svg {
+      width: 22px;
+      height: 22px;
       stroke: #eaf4ff;
       fill: none;
       stroke-width: 2.2;
@@ -491,7 +469,7 @@
       filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.65));
     }
 
-    .style-empty {
+    .empty-label {
       color: #d8e8ff;
       font-size: 14px;
       opacity: 0.72;
@@ -531,10 +509,6 @@
       .card-right {
         align-self: stretch;
         grid-template-columns: 1fr 1fr;
-      }
-
-      .comment-box {
-        margin-top: 20px;
       }
     }
 
@@ -645,12 +619,12 @@
 
       <div class="form-group">
         <label>プレイスタイル</label>
-        <div id="styleChecks" class="style-checks"></div>
+        <div id="styleChecks" class="check-grid"></div>
       </div>
 
       <div class="form-group">
-        <label for="commentInput">ひとこと</label>
-        <textarea id="commentInput" maxlength="120">深夜から朝方にかけて、のんびり遊んでいます。交流・SS・ハウジング巡りが好きです。</textarea>
+        <label>プレイ時間帯</label>
+        <div id="timeChecks" class="check-grid"></div>
       </div>
 
       <button id="saveButton" class="save-button" type="button">PNGとして保存</button>
@@ -681,10 +655,6 @@
                 <span id="dcPreview">Meteor</span> / <span id="worldPreview">Shinryu</span>
               </div>
             </div>
-
-            <div id="commentPreview" class="comment-box">
-              深夜から朝方にかけて、のんびり遊んでいます。交流・SS・ハウジング巡りが好きです。
-            </div>
           </div>
 
           <div class="card-right">
@@ -695,7 +665,12 @@
 
             <div class="info-box">
               <div class="info-label">Play Style</div>
-              <div id="styleIconPreview" class="style-icons"></div>
+              <div id="styleIconPreview" class="icon-list"></div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-label">Active Time</div>
+              <div id="timeIconPreview" class="icon-list"></div>
             </div>
           </div>
         </div>
@@ -724,24 +699,37 @@
       { id: "casual", label: "Casual", defaultChecked: true }
     ];
 
+    const TIME_OPTIONS = [
+      { id: "morning", label: "朝", defaultChecked: false },
+      { id: "daytime", label: "昼", defaultChecked: false },
+      { id: "evening", label: "夕方", defaultChecked: false },
+      { id: "night", label: "夜", defaultChecked: true },
+      { id: "resident", label: "住んでいる", defaultChecked: false }
+    ];
+
     const ICON_SVG = {
       housing: '<svg viewBox="0 0 24 24"><path d="M3 11.5L12 4l9 7.5"/><path d="M6 10.5V20h12v-9.5"/><path d="M10 20v-6h4v6"/></svg>',
       ss: '<svg viewBox="0 0 24 24"><path d="M5 8h3l1.5-2h5L16 8h3a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2z"/><circle cx="12" cy="14" r="3.5"/></svg>',
       pvp: '<svg viewBox="0 0 24 24"><path d="M6 4l14 14"/><path d="M18 4L4 18"/><path d="M5 3l4 1-3 3-1-4z"/><path d="M19 3l-4 1 3 3 1-4z"/></svg>',
-      battle: '<svg viewBox="0 0 24 24"><path d="M14 4l6 6-9 9H5v-6l9-9z"/><path d="M13 5l6 6"/><path d="M5 19l-2 2"/></svg>',
-      craft: '<svg viewBox="0 0 24 24"><path d="M14 5l5 5"/><path d="M4 20l9-9"/><path d="M12 4l8 8"/><path d="M7 17l-3 3"/></svg>',
+      battle: '<svg viewBox="0 0 24 24"><path d="M14 4l6 6-9 9H5v-6l9-9z"/><path d="M13 5l6 6"/></svg>',
+      craft: '<svg viewBox="0 0 24 24"><path d="M14 5l5 5"/><path d="M4 20l9-9"/><path d="M12 4l8 8"/></svg>',
       gathering: '<svg viewBox="0 0 24 24"><path d="M5 20c8-2 13-7 14-15-8 1-13 6-14 15z"/><path d="M5 20c3-5 7-8 12-11"/></svg>',
       rp: '<svg viewBox="0 0 24 24"><path d="M4 6h16v10H8l-4 4V6z"/><path d="M8 10h8"/><path d="M8 13h5"/></svg>',
       event: '<svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2l.9-5.5-4-3.9 5.5-.8L12 3z"/></svg>',
-      casual: '<svg viewBox="0 0 24 24"><path d="M6 8h10v7a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V8z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/><path d="M8 4v2"/><path d="M12 4v2"/><path d="M16 4v2"/></svg>'
+      casual: '<svg viewBox="0 0 24 24"><path d="M6 8h10v7a4 4 0 0 1-4 4H10a4 4 0 0 1-4-4V8z"/><path d="M16 10h2a2 2 0 0 1 0 4h-2"/><path d="M8 4v2"/><path d="M12 4v2"/><path d="M16 4v2"/></svg>',
+
+      morning: '<svg viewBox="0 0 24 24"><path d="M4 18h16"/><path d="M7 18a5 5 0 0 1 10 0"/><path d="M12 5v3"/><path d="M5.5 9.5l2.1 2.1"/><path d="M18.5 9.5l-2.1 2.1"/></svg>',
+      daytime: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v3"/><path d="M12 19v3"/><path d="M2 12h3"/><path d="M19 12h3"/><path d="M4.8 4.8l2.1 2.1"/><path d="M17.1 17.1l2.1 2.1"/><path d="M19.2 4.8l-2.1 2.1"/><path d="M6.9 17.1l-2.1 2.1"/></svg>',
+      evening: '<svg viewBox="0 0 24 24"><path d="M3 18h18"/><path d="M6 15h12"/><path d="M8 12h8"/><path d="M12 5v3"/><path d="M6.5 8.5l2 2"/><path d="M17.5 8.5l-2 2"/></svg>',
+      night: '<svg viewBox="0 0 24 24"><path d="M18 16.5A7 7 0 0 1 9.5 6a6.5 6.5 0 1 0 8.5 10.5z"/></svg>',
+      resident: '<svg viewBox="0 0 24 24"><path d="M3 11.5L12 4l9 7.5"/><path d="M6 10.5V20h12v-9.5"/><path d="M9 20v-5h6v5"/><path d="M8 7.5h8"/></svg>'
     };
 
     const fields = [
       { input: "nameInput", preview: "namePreview", fallback: "Character Name" },
       { input: "dcInput", preview: "dcPreview", fallback: "DC" },
       { input: "worldInput", preview: "worldPreview", fallback: "World" },
-      { input: "jobInput", preview: "jobPreview", fallback: "Main Job" },
-      { input: "commentInput", preview: "commentPreview", fallback: "ここにひとことが入ります。" }
+      { input: "jobInput", preview: "jobPreview", fallback: "Main Job" }
     ];
 
     const imageInput = document.getElementById("imageInput");
@@ -754,7 +742,9 @@
     const positionValue = document.getElementById("positionValue");
     const saveButton = document.getElementById("saveButton");
     const styleChecks = document.getElementById("styleChecks");
+    const timeChecks = document.getElementById("timeChecks");
     const styleIconPreview = document.getElementById("styleIconPreview");
+    const timeIconPreview = document.getElementById("timeIconPreview");
 
     let bgPositionX = 50;
     let bgPositionY = 50;
@@ -772,18 +762,11 @@
       return Math.min(Math.max(value, min), max);
     }
 
-    function getSelectedStyles() {
-      return STYLE_OPTIONS.filter((option) => {
-        const checkbox = document.getElementById(`style-${option.id}`);
-        return checkbox && checkbox.checked;
-      });
-    }
-
-    function renderStyleChecks() {
-      styleChecks.innerHTML = STYLE_OPTIONS.map((option) => `
-        <label class="style-check">
+    function renderChecks(container, options, prefix, updateFunction) {
+      container.innerHTML = options.map((option) => `
+        <label class="check-item">
           <input
-            id="style-${option.id}"
+            id="${prefix}-${option.id}"
             type="checkbox"
             value="${option.id}"
             ${option.defaultChecked ? "checked" : ""}
@@ -792,24 +775,37 @@
         </label>
       `).join("");
 
-      STYLE_OPTIONS.forEach((option) => {
-        document.getElementById(`style-${option.id}`).addEventListener("change", updateStylePreview);
+      options.forEach((option) => {
+        document.getElementById(`${prefix}-${option.id}`).addEventListener("change", updateFunction);
       });
     }
 
-    function updateStylePreview() {
-      const selected = getSelectedStyles();
+    function getSelectedOptions(options, prefix) {
+      return options.filter((option) => {
+        const checkbox = document.getElementById(`${prefix}-${option.id}`);
+        return checkbox && checkbox.checked;
+      });
+    }
 
+    function renderIconList(target, selected) {
       if (selected.length === 0) {
-        styleIconPreview.innerHTML = '<span class="style-empty">未選択</span>';
+        target.innerHTML = '<span class="empty-label">未選択</span>';
         return;
       }
 
-      styleIconPreview.innerHTML = selected.map((option) => `
-        <span class="style-icon" title="${option.label}" aria-label="${option.label}">
+      target.innerHTML = selected.map((option) => `
+        <span class="icon-chip" title="${option.label}" aria-label="${option.label}">
           ${ICON_SVG[option.id]}
         </span>
       `).join("");
+    }
+
+    function updateStylePreview() {
+      renderIconList(styleIconPreview, getSelectedOptions(STYLE_OPTIONS, "style"));
+    }
+
+    function updateTimePreview() {
+      renderIconList(timeIconPreview, getSelectedOptions(TIME_OPTIONS, "time"));
     }
 
     function updatePreview() {
@@ -1027,32 +1023,34 @@
     }
 
     function drawWrappedText(ctx, text, x, y, maxWidth, lineHeight, maxLines) {
-      const words = String(text || "").split(/(\s+)/);
+      const chars = Array.from(String(text || ""));
       const lines = [];
       let line = "";
 
-      words.forEach((word) => {
-        const test = line + word;
+      chars.forEach((char) => {
+        const test = line + char;
 
-        if (ctx.measureText(test).width > maxWidth && line.trim()) {
-          lines.push(line.trimEnd());
-          line = word.trimStart();
+        if (ctx.measureText(test).width > maxWidth && line) {
+          lines.push(line);
+          line = char;
         } else {
           line = test;
         }
       });
 
-      if (line.trim()) {
-        lines.push(line.trimEnd());
+      if (line) {
+        lines.push(line);
       }
 
       const output = lines.slice(0, maxLines);
 
       if (lines.length > maxLines && output.length > 0) {
         let last = output[output.length - 1];
+
         while (last.length > 0 && ctx.measureText(last + "…").width > maxWidth) {
           last = last.slice(0, -1);
         }
+
         output[output.length - 1] = last + "…";
       }
 
@@ -1069,12 +1067,6 @@
       base.addColorStop(0.48, "#242032");
       base.addColorStop(1, "#101421");
       ctx.fillStyle = base;
-      ctx.fillRect(0, 0, width, height);
-
-      const blue = ctx.createLinearGradient(0, 0, width * 0.7, height * 0.7);
-      blue.addColorStop(0, "rgba(81, 154, 255, 0.30)");
-      blue.addColorStop(1, "rgba(81, 154, 255, 0)");
-      ctx.fillStyle = blue;
       ctx.fillRect(0, 0, width, height);
 
       const smoke = ctx.createLinearGradient(0, 0, width, 0);
@@ -1122,10 +1114,13 @@
       const s = size / 24;
       ctx.scale(s, s);
 
-      if (id === "housing") {
+      if (id === "housing" || id === "resident") {
         ctx.beginPath(); ctx.moveTo(3, 11.5); ctx.lineTo(12, 4); ctx.lineTo(21, 11.5); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(6, 10.5); ctx.lineTo(6, 20); ctx.lineTo(18, 20); ctx.lineTo(18, 10.5); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(10, 20); ctx.lineTo(10, 14); ctx.lineTo(14, 14); ctx.lineTo(14, 20); ctx.stroke();
+        if (id === "resident") {
+          ctx.beginPath(); ctx.moveTo(8, 7.5); ctx.lineTo(16, 7.5); ctx.stroke();
+        }
       }
 
       if (id === "ss") {
@@ -1175,10 +1170,46 @@
         ctx.beginPath(); ctx.moveTo(8, 4); ctx.lineTo(8, 6); ctx.moveTo(12, 4); ctx.lineTo(12, 6); ctx.moveTo(16, 4); ctx.lineTo(16, 6); ctx.stroke();
       }
 
+      if (id === "morning") {
+        ctx.beginPath(); ctx.moveTo(4, 18); ctx.lineTo(20, 18); ctx.stroke();
+        ctx.beginPath(); ctx.arc(12, 18, 5, Math.PI, Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(12, 5); ctx.lineTo(12, 8); ctx.moveTo(5.5, 9.5); ctx.lineTo(7.6, 11.6); ctx.moveTo(18.5, 9.5); ctx.lineTo(16.4, 11.6); ctx.stroke();
+      }
+
+      if (id === "daytime") {
+        ctx.beginPath(); ctx.arc(12, 12, 4, 0, Math.PI * 2); ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(12, 2); ctx.lineTo(12, 5); ctx.moveTo(12, 19); ctx.lineTo(12, 22);
+        ctx.moveTo(2, 12); ctx.lineTo(5, 12); ctx.moveTo(19, 12); ctx.lineTo(22, 12);
+        ctx.moveTo(4.8, 4.8); ctx.lineTo(6.9, 6.9); ctx.moveTo(17.1, 17.1); ctx.lineTo(19.2, 19.2);
+        ctx.moveTo(19.2, 4.8); ctx.lineTo(17.1, 6.9); ctx.moveTo(6.9, 17.1); ctx.lineTo(4.8, 19.2);
+        ctx.stroke();
+      }
+
+      if (id === "evening") {
+        ctx.beginPath();
+        ctx.moveTo(3, 18); ctx.lineTo(21, 18);
+        ctx.moveTo(6, 15); ctx.lineTo(18, 15);
+        ctx.moveTo(8, 12); ctx.lineTo(16, 12);
+        ctx.moveTo(12, 5); ctx.lineTo(12, 8);
+        ctx.moveTo(6.5, 8.5); ctx.lineTo(8.5, 10.5);
+        ctx.moveTo(17.5, 8.5); ctx.lineTo(15.5, 10.5);
+        ctx.stroke();
+      }
+
+      if (id === "night") {
+        ctx.beginPath();
+        ctx.moveTo(18, 16.5);
+        ctx.bezierCurveTo(14, 18.5, 9, 16.5, 7.5, 12);
+        ctx.bezierCurveTo(6.2, 8.2, 7.8, 5.2, 9.5, 6);
+        ctx.bezierCurveTo(8.2, 10.8, 13.1, 16.4, 18, 16.5);
+        ctx.stroke();
+      }
+
       ctx.restore();
     }
 
-    function drawStyleIconsToCanvas(ctx, selected, startX, startY) {
+    function drawIconGroup(ctx, selected, startX, startY, iconSize, perRow) {
       if (selected.length === 0) {
         ctx.save();
         ctx.fillStyle = "rgba(255, 255, 255, 0.72)";
@@ -1188,19 +1219,17 @@
         return;
       }
 
-      const size = 48;
-      const gap = 12;
-      const perRow = 4;
+      const gap = 10;
 
       selected.forEach((option, index) => {
         const row = Math.floor(index / perRow);
         const col = index % perRow;
-        const x = startX + col * (size + gap);
-        const y = startY + row * (size + gap);
+        const x = startX + col * (iconSize + gap);
+        const y = startY + row * (iconSize + gap);
 
-        fillRound(ctx, x, y, size, size, 14, "rgba(120, 170, 255, 0.16)");
-        strokeRound(ctx, x, y, size, size, 14, "rgba(185, 215, 255, 0.46)", 1.5);
-        drawIcon(ctx, option.id, x + 10, y + 10, 28);
+        fillRound(ctx, x, y, iconSize, iconSize, 13, "rgba(120, 170, 255, 0.16)");
+        strokeRound(ctx, x, y, iconSize, iconSize, 13, "rgba(185, 215, 255, 0.46)", 1.5);
+        drawIcon(ctx, option.id, x + 9, y + 9, iconSize - 18);
       });
     }
 
@@ -1222,8 +1251,8 @@
       const dc = getInputValue("dcInput", "DC");
       const world = getInputValue("worldInput", "World");
       const job = getInputValue("jobInput", "Main Job");
-      const comment = getInputValue("commentInput", "ここにひとことが入ります。");
-      const selectedStyles = getSelectedStyles();
+      const selectedStyles = getSelectedOptions(STYLE_OPTIONS, "style");
+      const selectedTimes = getSelectedOptions(TIME_OPTIONS, "time");
 
       ctx.save();
       ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
@@ -1232,35 +1261,26 @@
 
       ctx.fillStyle = "#b9d7ff";
       ctx.font = `800 18px ${FONT_STACK}`;
-      ctx.fillText("FINAL FANTASY XIV CHARACTER CARD", 72, 96);
+      ctx.fillText("FINAL FANTASY XIV CHARACTER CARD", 72, 130);
 
       ctx.fillStyle = "#ffffff";
       ctx.font = `900 68px ${FONT_STACK}`;
-      const nameLines = drawWrappedText(ctx, name, 72, 168, 560, 74, 2);
+      const nameLines = drawWrappedText(ctx, name, 72, 200, 500, 74, 2);
 
       ctx.fillStyle = "#e2ecfb";
       ctx.font = `700 26px ${FONT_STACK}`;
-      ctx.fillText(`${dc} / ${world}`, 74, nameLines > 1 ? 330 : 258);
+      ctx.fillText(`${dc} / ${world}`, 74, nameLines > 1 ? 360 : 286);
 
       ctx.restore();
 
-      fillRound(ctx, 72, 430, 650, 150, 22, "rgba(0, 0, 0, 0.50)");
-      strokeRound(ctx, 72, 430, 650, 150, 22, "rgba(255, 255, 255, 0.20)", 1.5);
+      fillRound(ctx, 790, 205, 330, 96, 22, "rgba(0, 0, 0, 0.44)");
+      strokeRound(ctx, 790, 205, 330, 96, 22, "rgba(255, 255, 255, 0.22)", 1.5);
 
-      ctx.save();
-      ctx.fillStyle = "#f3f7ff";
-      ctx.shadowColor = "rgba(0, 0, 0, 0.75)";
-      ctx.shadowBlur = 10;
-      ctx.shadowOffsetY = 2;
-      ctx.font = `500 22px ${FONT_STACK}`;
-      drawWrappedText(ctx, comment, 102, 470, 590, 36, 3);
-      ctx.restore();
+      fillRound(ctx, 790, 325, 330, 142, 22, "rgba(0, 0, 0, 0.44)");
+      strokeRound(ctx, 790, 325, 330, 142, 22, "rgba(255, 255, 255, 0.22)", 1.5);
 
-      fillRound(ctx, 790, 250, 330, 96, 22, "rgba(0, 0, 0, 0.44)");
-      strokeRound(ctx, 790, 250, 330, 96, 22, "rgba(255, 255, 255, 0.22)", 1.5);
-
-      fillRound(ctx, 790, 370, 330, 140, 22, "rgba(0, 0, 0, 0.44)");
-      strokeRound(ctx, 790, 370, 330, 140, 22, "rgba(255, 255, 255, 0.22)", 1.5);
+      fillRound(ctx, 790, 490, 330, 96, 22, "rgba(0, 0, 0, 0.44)");
+      strokeRound(ctx, 790, 490, 330, 96, 22, "rgba(255, 255, 255, 0.22)", 1.5);
 
       ctx.save();
       ctx.shadowColor = "rgba(0, 0, 0, 0.78)";
@@ -1269,19 +1289,22 @@
 
       ctx.fillStyle = "#b9d7ff";
       ctx.font = `800 15px ${FONT_STACK}`;
-      ctx.fillText("MAIN JOB", 814, 286);
+      ctx.fillText("MAIN JOB", 814, 242);
 
       ctx.fillStyle = "#ffffff";
       ctx.font = `800 31px ${FONT_STACK}`;
-      drawWrappedText(ctx, job, 814, 324, 282, 36, 1);
+      drawWrappedText(ctx, job, 814, 280, 282, 36, 1);
 
       ctx.fillStyle = "#b9d7ff";
       ctx.font = `800 15px ${FONT_STACK}`;
-      ctx.fillText("PLAY STYLE", 814, 408);
+      ctx.fillText("PLAY STYLE", 814, 363);
+
+      ctx.fillText("ACTIVE TIME", 814, 528);
 
       ctx.restore();
 
-      drawStyleIconsToCanvas(ctx, selectedStyles, 814, 428);
+      drawIconGroup(ctx, selectedStyles, 814, 383, 42, 5);
+      drawIconGroup(ctx, selectedTimes, 814, 548, 42, 5);
 
       ctx.save();
       ctx.fillStyle = "rgba(255, 255, 255, 0.80)";
@@ -1314,8 +1337,10 @@
 
     saveButton.addEventListener("click", saveCardAsPng);
 
-    renderStyleChecks();
+    renderChecks(styleChecks, STYLE_OPTIONS, "style", updateStylePreview);
+    renderChecks(timeChecks, TIME_OPTIONS, "time", updateTimePreview);
     updateStylePreview();
+    updateTimePreview();
     updatePreview();
     setBackgroundPosition(50, 50);
   </script>
