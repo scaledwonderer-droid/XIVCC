@@ -851,62 +851,62 @@
       strokeRound(ctx, x, y, w, h, 22, "rgba(255, 255, 255, 0.22)", 1.5);
     }
 
-function drawInfoColumn(x) {
-  const columnW = 440;
-  const name = getValue(nameInput, "Character Name");
-  const dc = getValue(dcInput, "DC");
-  const world = getValue(worldInput, "World");
-  const job = getValue(jobInput, "Main Job");
-  const selectedStyles = getSelectedOptions(STYLE_OPTIONS, "style");
-  const selectedTimes = getSelectedOptions(TIME_OPTIONS, "time");
+    function drawInfoColumn(x) {
+      const columnW = 440;
+      const name = getValue(nameInput, "Character Name");
+      const dc = getValue(dcInput, "DC");
+      const world = getValue(worldInput, "World");
+      const job = getValue(jobInput, "Main Job");
+      const selectedStyles = getSelectedOptions(STYLE_OPTIONS, "style");
+      const selectedTimes = getSelectedOptions(TIME_OPTIONS, "time");
 
-  ctx.save();
-  ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
-  ctx.shadowBlur = 16;
-  ctx.shadowOffsetY = 4;
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
+      ctx.shadowBlur = 16;
+      ctx.shadowOffsetY = 4;
 
-  ctx.fillStyle = "#b9d7ff";
-  ctx.font = `800 18px ${FONT_STACK}`;
-  ctx.fillText("FINAL FANTASY XIV CHARACTER CARD", x, 98);
+      ctx.fillStyle = "#b9d7ff";
+      ctx.font = `800 18px ${FONT_STACK}`;
+      ctx.fillText("FINAL FANTASY XIV CHARACTER CARD", x, 98);
 
-  ctx.fillStyle = "#ffffff";
-  const nameFontSize = setBestNameFont(name, columnW);
-  ctx.font = `900 ${nameFontSize}px ${FONT_STACK}`;
-  drawWrappedText(name, x, 158, columnW, 64, 1);
+      ctx.fillStyle = "#ffffff";
+      const nameFontSize = setBestNameFont(name, columnW);
+      ctx.font = `900 ${nameFontSize}px ${FONT_STACK}`;
+      drawWrappedText(name, x, 158, columnW, 64, 1);
 
-  ctx.fillStyle = "#e2ecfb";
-  ctx.font = `700 26px ${FONT_STACK}`;
-  ctx.fillText(`${dc} / ${world}`, x + 2, 224);
+      ctx.fillStyle = "#e2ecfb";
+      ctx.font = `700 26px ${FONT_STACK}`;
+      ctx.fillText(`${dc} / ${world}`, x + 2, 224);
 
-  ctx.restore();
+      ctx.restore();
 
-  drawInfoBox(x, 250, columnW, 88);
-  drawInfoBox(x, 358, columnW, 150);
-  drawInfoBox(x, 528, columnW, 98);
+      drawInfoBox(x, 250, columnW, 88);
+      drawInfoBox(x, 358, columnW, 150);
+      drawInfoBox(x, 528, columnW, 98);
 
-  ctx.save();
-  ctx.shadowColor = "rgba(0, 0, 0, 0.78)";
-  ctx.shadowBlur = 10;
-  ctx.shadowOffsetY = 2;
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, 0.78)";
+      ctx.shadowBlur = 10;
+      ctx.shadowOffsetY = 2;
 
-  ctx.fillStyle = "#b9d7ff";
-  ctx.font = `800 15px ${FONT_STACK}`;
-  ctx.fillText("MAIN JOB", x + 24, 286);
+      ctx.fillStyle = "#b9d7ff";
+      ctx.font = `800 15px ${FONT_STACK}`;
+      ctx.fillText("MAIN JOB", x + 24, 286);
 
-  ctx.fillStyle = "#ffffff";
-  ctx.font = `800 31px ${FONT_STACK}`;
-  drawWrappedText(job, x + 24, 322, columnW - 48, 36, 1);
+      ctx.fillStyle = "#ffffff";
+      ctx.font = `800 31px ${FONT_STACK}`;
+      drawWrappedText(job, x + 24, 322, columnW - 48, 36, 1);
 
-  ctx.fillStyle = "#b9d7ff";
-  ctx.font = `800 15px ${FONT_STACK}`;
-  ctx.fillText("PLAY STYLE", x + 24, 394);
-  ctx.fillText("ACTIVE TIME", x + 24, 562);
+      ctx.fillStyle = "#b9d7ff";
+      ctx.font = `800 15px ${FONT_STACK}`;
+      ctx.fillText("PLAY STYLE", x + 24, 394);
+      ctx.fillText("ACTIVE TIME", x + 24, 562);
 
-  ctx.restore();
+      ctx.restore();
 
-  drawIconGroup(selectedStyles, x + 24, 414, 38, 6);
-  drawIconGroup(selectedTimes, x + 24, 580, 34, 5);
-}
+      drawIconGroup(selectedStyles, x + 24, 414, 38, 6);
+      drawIconGroup(selectedTimes, x + 24, 580, 34, 5);
+    }
 
     function renderCard() {
       updateUiLabels();
@@ -921,14 +921,16 @@ function drawInfoColumn(x) {
       const columnX = layoutMode === "left" ? 72 : CARD_W - 72 - 440;
       drawInfoColumn(columnX);
 
+      const copyrightOnLeft = layoutMode === "right";
+
       ctx.save();
       ctx.fillStyle = "rgba(255, 255, 255, 0.80)";
       ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
       ctx.shadowBlur = 8;
       ctx.shadowOffsetY = 2;
       ctx.font = `500 15px ${FONT_STACK}`;
-      ctx.textAlign = "right";
-      ctx.fillText("© SQUARE ENIX", CARD_W - 42, CARD_H - 34);
+      ctx.textAlign = copyrightOnLeft ? "left" : "right";
+      ctx.fillText("© SQUARE ENIX", copyrightOnLeft ? 42 : CARD_W - 42, CARD_H - 34);
       ctx.restore();
     }
 
