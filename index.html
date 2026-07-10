@@ -852,7 +852,7 @@
 
     function drawInfoColumn(x) {
       const columnW = 500;
-      const name = getValue(nameInput, "Character Name");
+      const name = nameInput.value.trim();
       const dc = getValue(dcInput, "DC");
       const world = getValue(worldInput, "World");
       const job = getValue(jobInput, "Main Job");
@@ -866,12 +866,14 @@
 
       ctx.fillStyle = "#b9d7ff";
       ctx.font = `800 18px ${FONT_STACK}`;
-      ctx.fillText("FINAL FANTASY XIV CHARACTER CARD", x, 98);
+      ctx.fillText("FFXIV CHARACTER CARD", x, 98);
 
-      ctx.fillStyle = "#ffffff";
-      const nameFontSize = setBestNameFont(name, columnW);
-      ctx.font = `900 ${nameFontSize}px ${FONT_STACK}`;
-      drawWrappedText(name, x, 158, columnW, 64, 1);
+      if (name) {
+        ctx.fillStyle = "#ffffff";
+        const nameFontSize = setBestNameFont(name, columnW);
+        ctx.font = `900 ${nameFontSize}px ${FONT_STACK}`;
+        drawWrappedText(name, x, 158, columnW, 64, 1);
+      }
 
       ctx.fillStyle = "#e2ecfb";
       ctx.font = `700 26px ${FONT_STACK}`;
