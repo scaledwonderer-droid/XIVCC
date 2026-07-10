@@ -249,29 +249,31 @@
     }
 
     .bg-image {
-      --image-zoom: 1.1;
       position: absolute;
-      inset: 0;
       z-index: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center center;
-      transform: scale(var(--image-zoom));
-      transform-origin: center center;
+      left: 0;
+      top: 0;
+      width: auto;
+      height: auto;
+      max-width: none;
+      max-height: none;
       opacity: 0;
       pointer-events: none;
       transition:
         opacity 0.2s ease,
-        transform 0.2s ease,
-        object-position 0.08s linear;
+        left 0.08s linear,
+        top 0.08s linear,
+        width 0.08s linear,
+        height 0.08s linear;
     }
 
     .card.is-dragging .bg-image {
       transition:
         opacity 0.2s ease,
-        transform 0.2s ease,
-        object-position 0s linear;
+        left 0s linear,
+        top 0s linear,
+        width 0.08s linear,
+        height 0.08s linear;
     }
 
     .bg-image.has-image {
@@ -677,6 +679,9 @@
     let bgPositionX = 50;
     let bgPositionY = 50;
 
+    let imageNaturalWidth = 0;
+    let imageNaturalHeight = 0;
+
     let isDragging = false;
     let dragStartClientX = 0;
     let dragStartClientY = 0;
@@ -719,14 +724,59 @@
       }
     }
 
+    function getImageLayout() {
+      const rect = cardPreview.getBoundingClientRect();
+
+      if (!imageNaturalWidth || !imageNaturalHeight || rect.width <= 0 || rect.height <= 0) {
+        return null;
+      }
+
+      const zoom = Number(zoomInput.value) / 100;
+      const coverScale = Math.max(
+        rect.width / imageNaturalWidth,
+        rect.height / imageNaturalHeight
+      );
+
+      const displayWidth = imageNaturalWidth * coverScale * zoom;
+      const displayHeight = imageNaturalHeight * coverScale * zoom;
+
+      const overflowX = Math.max(displayWidth - rect.width, 0);
+      const overflowY = Math.max(displayHeight - rect.height, 0);
+
+      const left = -overflowX * (bgPositionX / 100);
+      const top = -overflowY * (bgPositionY / 100);
+
+      return {
+        displayWidth,
+        displayHeight,
+        overflowX,
+        overflowY,
+        left,
+        top
+      };
+    }
+
+    function applyBackgroundLayout() {
+      zoomValue.textContent = `${Number(zoomInput.value)}%`;
+      positionValue.textContent = `${bgPositionX}% / ${bgPositionY}%`;
+
+      const layout = getImageLayout();
+
+      if (!layout) {
+        return;
+      }
+
+      bgImage.style.width = `${layout.displayWidth}px`;
+      bgImage.style.height = `${layout.displayHeight}px`;
+      bgImage.style.left = `${layout.left}px`;
+      bgImage.style.top = `${layout.top}px`;
+    }
+
     function setBackgroundPosition(x, y, shouldUpdateGrid = true) {
       bgPositionX = Math.round(clamp(Number(x), 0, 100));
       bgPositionY = Math.round(clamp(Number(y), 0, 100));
 
-      const position = `${bgPositionX}% ${bgPositionY}%`;
-
-      bgImage.style.objectPosition = position;
-      positionValue.textContent = `${bgPositionX}% / ${bgPositionY}%`;
+      applyBackgroundLayout();
 
       if (shouldUpdateGrid) {
         updateActiveGridButton();
@@ -734,19 +784,7 @@
     }
 
     function updateZoom() {
-      const zoom = Number(zoomInput.value);
-      const scale = zoom / 100;
-
-      bgImage.style.setProperty("--image-zoom", scale);
-      zoomValue.textContent = `${zoom}%`;
-    }
-
-    function getDragSensitivity() {
-      const zoom = Number(zoomInput.value);
-      const scale = zoom / 100;
-      const extraScale = Math.max(scale - 1, 0.08);
-
-      return extraScale;
+      applyBackgroundLayout();
     }
 
     fields.forEach((field) => {
@@ -770,11 +808,18 @@
       const reader = new FileReader();
 
       reader.onload = () => {
+        bgImage.onload = () => {
+          imageNaturalWidth = bgImage.naturalWidth;
+          imageNaturalHeight = bgImage.naturalHeight;
+
+          bgImage.classList.add("has-image");
+          cardPreview.classList.add("has-bg");
+
+          setBackgroundPosition(bgPositionX, bgPositionY);
+          updateZoom();
+        };
+
         bgImage.src = reader.result;
-        bgImage.classList.add("has-image");
-        cardPreview.classList.add("has-bg");
-        updateZoom();
-        setBackgroundPosition(bgPositionX, bgPositionY);
       };
 
       reader.readAsDataURL(file);
@@ -783,10 +828,16 @@
     clearImageButton.addEventListener("click", () => {
       imageInput.value = "";
       bgImage.removeAttribute("src");
+      bgImage.removeAttribute("style");
       bgImage.classList.remove("has-image");
       cardPreview.classList.remove("has-bg");
       cardPreview.classList.remove("is-dragging");
+
+      imageNaturalWidth = 0;
+      imageNaturalHeight = 0;
       isDragging = false;
+
+      setBackgroundPosition(50, 50);
     });
 
     positionButtons.forEach((button) => {
@@ -812,6 +863,8 @@
         return;
       }
 
+      event.preventDefault();
+
       isDragging = true;
       dragStartClientX = event.clientX;
       dragStartClientY = event.clientY;
@@ -827,17 +880,24 @@
         return;
       }
 
-      const rect = cardPreview.getBoundingClientRect();
-      const sensitivity = getDragSensitivity();
+      event.preventDefault();
+
+      const layout = getImageLayout();
+
+      if (!layout) {
+        return;
+      }
 
       const deltaX = event.clientX - dragStartClientX;
       const deltaY = event.clientY - dragStartClientY;
 
-      const moveX = (deltaX / rect.width) * 100 / sensitivity;
-      const moveY = (deltaY / rect.height) * 100 / sensitivity;
+      const nextX = layout.overflowX > 0
+        ? dragStartPositionX - (deltaX / layout.overflowX) * 100
+        : bgPositionX;
 
-      const nextX = dragStartPositionX - moveX;
-      const nextY = dragStartPositionY - moveY;
+      const nextY = layout.overflowY > 0
+        ? dragStartPositionY - (deltaY / layout.overflowY) * 100
+        : bgPositionY;
 
       setBackgroundPosition(nextX, nextY);
     });
@@ -862,6 +922,10 @@
     cardPreview.addEventListener("pointerup", endDrag);
     cardPreview.addEventListener("pointercancel", endDrag);
     cardPreview.addEventListener("pointerleave", endDrag);
+
+    window.addEventListener("resize", () => {
+      applyBackgroundLayout();
+    });
 
     updatePreview();
     updateZoom();
