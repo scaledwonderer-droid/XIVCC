@@ -5,21 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FF14 Character Card Generator</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family:
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        "Hiragino Sans",
-        "Yu Gothic",
-        "Meiryo",
-        sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
       background:
         radial-gradient(circle at top left, rgba(120, 170, 255, 0.22), transparent 32%),
         linear-gradient(135deg, #101522, #18131f 45%, #0d1018);
@@ -71,9 +61,7 @@
       letter-spacing: 0.04em;
     }
 
-    .form-group {
-      margin-bottom: 14px;
-    }
+    .form-group { margin-bottom: 14px; }
 
     label {
       display: block;
@@ -127,9 +115,7 @@
       cursor: pointer;
     }
 
-    button:hover {
-      background: rgba(255, 255, 255, 0.16);
-    }
+    button:hover { background: rgba(255, 255, 255, 0.16); }
 
     .save-button {
       width: 100%;
@@ -150,7 +136,8 @@
       gap: 8px;
     }
 
-    .layout-button.is-active {
+    .layout-button.is-active,
+    .position-button.is-active {
       border-color: rgba(150, 205, 255, 0.95);
       background: rgba(90, 150, 230, 0.35);
       box-shadow: 0 0 0 3px rgba(130, 190, 255, 0.14);
@@ -168,12 +155,6 @@
       font-size: 18px;
       line-height: 1;
       background: rgba(0, 0, 0, 0.22);
-    }
-
-    .position-button.is-active {
-      border-color: rgba(150, 205, 255, 0.95);
-      background: rgba(90, 150, 230, 0.35);
-      box-shadow: 0 0 0 3px rgba(130, 190, 255, 0.14);
     }
 
     .range-head {
@@ -241,9 +222,7 @@
       line-height: 1.7;
     }
 
-    .preview-wrap {
-      overflow: hidden;
-    }
+    .preview-wrap { overflow: hidden; }
 
     .preview-title {
       display: flex;
@@ -278,13 +257,8 @@
       background: #101421;
     }
 
-    #previewCanvas.has-bg {
-      cursor: grab;
-    }
-
-    #previewCanvas.is-dragging {
-      cursor: grabbing;
-    }
+    #previewCanvas.has-bg { cursor: grab; }
+    #previewCanvas.is-dragging { cursor: grabbing; }
 
     footer {
       width: min(1180px, 94vw);
@@ -296,9 +270,7 @@
     }
 
     @media (max-width: 900px) {
-      main {
-        grid-template-columns: 1fr;
-      }
+      main { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 560px) {
@@ -333,11 +305,11 @@
       <div class="form-group">
         <label>レイアウト</label>
         <div class="layout-buttons">
-          <button class="layout-button is-active" type="button" data-layout="normal">
-            名前：左 / 情報：右
+          <button class="layout-button" type="button" data-layout="left">
+            情報一式：左
           </button>
-          <button class="layout-button" type="button" data-layout="reverse">
-            情報：左 / 名前：右
+          <button class="layout-button is-active" type="button" data-layout="right">
+            情報一式：右
           </button>
         </div>
       </div>
@@ -377,7 +349,7 @@
         </div>
         <p class="drag-help">
           SSを選択したあと、カードプレビュー上でマウスドラッグすると背景を動かせます。<br>
-          今回からプレビューと保存画像は同じCanvasから出力されます。
+          プレビューと保存画像は同じCanvasから出力されます。
         </p>
       </div>
 
@@ -481,7 +453,7 @@
     const CARD_W = 1200;
     const CARD_H = 675;
 
-    let layoutMode = "normal";
+    let layoutMode = "right";
 
     let bgImage = new Image();
     let hasBgImage = false;
@@ -549,39 +521,34 @@
 
         button.classList.toggle("is-active", isMatch);
 
-        if (isMatch) {
-          matched = true;
-        }
+        if (isMatch) matched = true;
       });
 
       if (!matched) {
-        positionButtons.forEach((button) => {
-          button.classList.remove("is-active");
-        });
+        positionButtons.forEach((button) => button.classList.remove("is-active"));
       }
+    }
+
+    function updateLayoutButtons() {
+      layoutButtons.forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.layout === layoutMode);
+      });
     }
 
     function setBackgroundPosition(x, y, shouldUpdateGrid = true) {
       bgPositionX = Math.round(clamp(Number(x), 0, 100));
       bgPositionY = Math.round(clamp(Number(y), 0, 100));
 
-      if (shouldUpdateGrid) {
-        updateActiveGridButton();
-      }
+      if (shouldUpdateGrid) updateActiveGridButton();
 
       renderCard();
     }
 
     function getImageLayout(targetWidth, targetHeight) {
-      if (!hasBgImage || !imageNaturalWidth || !imageNaturalHeight) {
-        return null;
-      }
+      if (!hasBgImage || !imageNaturalWidth || !imageNaturalHeight) return null;
 
       const zoom = Number(zoomInput.value) / 100;
-      const coverScale = Math.max(
-        targetWidth / imageNaturalWidth,
-        targetHeight / imageNaturalHeight
-      );
+      const coverScale = Math.max(targetWidth / imageNaturalWidth, targetHeight / imageNaturalHeight);
 
       const displayWidth = imageNaturalWidth * coverScale * zoom;
       const displayHeight = imageNaturalHeight * coverScale * zoom;
@@ -592,14 +559,7 @@
       const left = -overflowX * (bgPositionX / 100);
       const top = -overflowY * (bgPositionY / 100);
 
-      return {
-        displayWidth,
-        displayHeight,
-        overflowX,
-        overflowY,
-        left,
-        top
-      };
+      return { displayWidth, displayHeight, overflowX, overflowY, left, top };
     }
 
     function roundRect(ctx, x, y, width, height, radius) {
@@ -668,13 +628,7 @@
         const layout = getImageLayout(CARD_W, CARD_H);
 
         if (layout) {
-          ctx.drawImage(
-            bgImage,
-            layout.left,
-            layout.top,
-            layout.displayWidth,
-            layout.displayHeight
-          );
+          ctx.drawImage(bgImage, layout.left, layout.top, layout.displayWidth, layout.displayHeight);
           return;
         }
       }
@@ -698,9 +652,7 @@
         }
       });
 
-      if (line) {
-        lines.push(line);
-      }
+      if (line) lines.push(line);
 
       const output = lines.slice(0, maxLines);
 
@@ -719,6 +671,23 @@
       });
 
       return output.length;
+    }
+
+    function setBestNameFont(name, maxWidth) {
+      let size = 66;
+
+      while (size > 48) {
+        ctx.font = `900 ${size}px ${FONT_STACK}`;
+
+        if (ctx.measureText(name).width <= maxWidth) {
+          return size;
+        }
+
+        size -= 2;
+      }
+
+      ctx.font = `900 ${size}px ${FONT_STACK}`;
+      return size;
     }
 
     function drawIcon(id, x, y, size) {
@@ -882,10 +851,14 @@
       strokeRound(ctx, x, y, w, h, 22, "rgba(255, 255, 255, 0.22)", 1.5);
     }
 
-    function drawTextBlock(x, maxWidth) {
+    function drawInfoColumn(x) {
+      const columnW = 440;
       const name = getValue(nameInput, "Character Name");
       const dc = getValue(dcInput, "DC");
       const world = getValue(worldInput, "World");
+      const job = getValue(jobInput, "Main Job");
+      const selectedStyles = getSelectedOptions(STYLE_OPTIONS, "style");
+      const selectedTimes = getSelectedOptions(TIME_OPTIONS, "time");
 
       ctx.save();
       ctx.shadowColor = "rgba(0, 0, 0, 0.85)";
@@ -894,29 +867,22 @@
 
       ctx.fillStyle = "#b9d7ff";
       ctx.font = `800 18px ${FONT_STACK}`;
-      ctx.fillText("FINAL FANTASY XIV CHARACTER CARD", x, 130);
+      ctx.fillText("FINAL FANTASY XIV CHARACTER CARD", x, 118);
 
       ctx.fillStyle = "#ffffff";
-      ctx.font = `900 68px ${FONT_STACK}`;
-      const nameLines = drawWrappedText(name, x, 200, maxWidth, 74, 2);
+      const nameFontSize = setBestNameFont(name, columnW);
+      ctx.font = `900 ${nameFontSize}px ${FONT_STACK}`;
+      drawWrappedText(name, x, 178, columnW, 64, 1);
 
       ctx.fillStyle = "#e2ecfb";
       ctx.font = `700 26px ${FONT_STACK}`;
-      ctx.fillText(`${dc} / ${world}`, x + 2, nameLines > 1 ? 360 : 286);
+      ctx.fillText(`${dc} / ${world}`, x + 2, 242);
 
       ctx.restore();
-    }
 
-    function drawInfoBlock(x) {
-      const job = getValue(jobInput, "Main Job");
-      const selectedStyles = getSelectedOptions(STYLE_OPTIONS, "style");
-      const selectedTimes = getSelectedOptions(TIME_OPTIONS, "time");
-
-      const boxW = 370;
-
-      drawInfoBox(x, 205, boxW, 96);
-      drawInfoBox(x, 325, boxW, 172);
-      drawInfoBox(x, 520, boxW, 100);
+      drawInfoBox(x, 270, columnW, 88);
+      drawInfoBox(x, 378, columnW, 148);
+      drawInfoBox(x, 546, columnW, 88);
 
       ctx.save();
       ctx.shadowColor = "rgba(0, 0, 0, 0.78)";
@@ -925,22 +891,21 @@
 
       ctx.fillStyle = "#b9d7ff";
       ctx.font = `800 15px ${FONT_STACK}`;
-      ctx.fillText("MAIN JOB", x + 24, 242);
+      ctx.fillText("MAIN JOB", x + 24, 306);
 
       ctx.fillStyle = "#ffffff";
       ctx.font = `800 31px ${FONT_STACK}`;
-      drawWrappedText(job, x + 24, 280, boxW - 48, 36, 1);
+      drawWrappedText(job, x + 24, 342, columnW - 48, 36, 1);
 
       ctx.fillStyle = "#b9d7ff";
       ctx.font = `800 15px ${FONT_STACK}`;
-      ctx.fillText("PLAY STYLE", x + 24, 363);
-
-      ctx.fillText("ACTIVE TIME", x + 24, 558);
+      ctx.fillText("PLAY STYLE", x + 24, 414);
+      ctx.fillText("ACTIVE TIME", x + 24, 582);
 
       ctx.restore();
 
-      drawIconGroup(selectedStyles, x + 24, 383, 42, 5);
-      drawIconGroup(selectedTimes, x + 24, 578, 42, 5);
+      drawIconGroup(selectedStyles, x + 24, 434, 38, 6);
+      drawIconGroup(selectedTimes, x + 24, 600, 38, 5);
     }
 
     function renderCard() {
@@ -953,13 +918,8 @@
       strokeRound(ctx, 1, 1, CARD_W - 2, CARD_H - 2, 34, "rgba(255, 255, 255, 0.24)", 2);
       strokeRound(ctx, 30, 30, CARD_W - 60, CARD_H - 60, 26, "rgba(255, 255, 255, 0.30)", 2);
 
-      if (layoutMode === "normal") {
-        drawTextBlock(72, 560);
-        drawInfoBlock(750);
-      } else {
-        drawInfoBlock(72);
-        drawTextBlock(610, 520);
-      }
+      const columnX = layoutMode === "left" ? 72 : CARD_W - 72 - 440;
+      drawInfoColumn(columnX);
 
       ctx.save();
       ctx.fillStyle = "rgba(255, 255, 255, 0.80)";
@@ -972,12 +932,6 @@
       ctx.restore();
     }
 
-    function updateLayoutButtons() {
-      layoutButtons.forEach((button) => {
-        button.classList.toggle("is-active", button.dataset.layout === layoutMode);
-      });
-    }
-
     renderChecks(styleChecks, STYLE_OPTIONS, "style");
     renderChecks(timeChecks, TIME_OPTIONS, "time");
 
@@ -988,9 +942,7 @@
     imageInput.addEventListener("change", () => {
       const file = imageInput.files[0];
 
-      if (!file) {
-        return;
-      }
+      if (!file) return;
 
       if (!file.type.startsWith("image/")) {
         alert("画像ファイルを選択してください。");
@@ -1041,18 +993,11 @@
       });
     });
 
-    zoomInput.addEventListener("input", () => {
-      renderCard();
-    });
+    zoomInput.addEventListener("input", renderCard);
 
     previewCanvas.addEventListener("pointerdown", (event) => {
-      if (!hasBgImage) {
-        return;
-      }
-
-      if (event.button !== undefined && event.button !== 0) {
-        return;
-      }
+      if (!hasBgImage) return;
+      if (event.button !== undefined && event.button !== 0) return;
 
       event.preventDefault();
 
@@ -1067,17 +1012,12 @@
     });
 
     previewCanvas.addEventListener("pointermove", (event) => {
-      if (!isDragging) {
-        return;
-      }
+      if (!isDragging) return;
 
       event.preventDefault();
 
       const layout = getImageLayout(CARD_W, CARD_H);
-
-      if (!layout) {
-        return;
-      }
+      if (!layout) return;
 
       const rect = previewCanvas.getBoundingClientRect();
       const scaleX = CARD_W / rect.width;
@@ -1098,9 +1038,7 @@
     });
 
     function endDrag(event) {
-      if (!isDragging) {
-        return;
-      }
+      if (!isDragging) return;
 
       isDragging = false;
       previewCanvas.classList.remove("is-dragging");
