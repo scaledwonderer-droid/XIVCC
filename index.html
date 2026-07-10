@@ -674,20 +674,19 @@
     }
 
     function setBestNameFont(name, maxWidth) {
-      let size = 66;
+      const maxSize = 66;
+      const minSize = 32;
 
-      while (size > 48) {
+      for (let size = maxSize; size >= minSize; size -= 2) {
         ctx.font = `900 ${size}px ${FONT_STACK}`;
 
         if (ctx.measureText(name).width <= maxWidth) {
           return size;
         }
-
-        size -= 2;
       }
 
-      ctx.font = `900 ${size}px ${FONT_STACK}`;
-      return size;
+      ctx.font = `900 ${minSize}px ${FONT_STACK}`;
+      return minSize;
     }
 
     function drawIcon(id, x, y, size) {
@@ -852,7 +851,7 @@
     }
 
     function drawInfoColumn(x) {
-      const columnW = 440;
+      const columnW = 500;
       const name = getValue(nameInput, "Character Name");
       const dc = getValue(dcInput, "DC");
       const world = getValue(worldInput, "World");
@@ -918,7 +917,8 @@
       strokeRound(ctx, 1, 1, CARD_W - 2, CARD_H - 2, 34, "rgba(255, 255, 255, 0.24)", 2);
       strokeRound(ctx, 30, 30, CARD_W - 60, CARD_H - 60, 26, "rgba(255, 255, 255, 0.30)", 2);
 
-      const columnX = layoutMode === "left" ? 72 : CARD_W - 72 - 440;
+      const columnW = 500;
+      const columnX = layoutMode === "left" ? 72 : CARD_W - 72 - columnW;
       drawInfoColumn(columnX);
 
       const copyrightOnLeft = layoutMode === "right";
